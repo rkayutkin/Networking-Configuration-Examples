@@ -1,0 +1,26 @@
+##Remote between two switches##
+
+#1.Configure a VLAN as an RSPAN VLAN.#
+#2.Associate an RSPAN source session number with source ports or VLANs.#
+#3.Associate an RSPAN source session number with the RSPAN VLAN.#
+#4.Associate an RSPAN destination session number with the destination port.#
+#5.Associate an RSPAN destination session number with the RSPAN VLAN.#
+
+#SW1 Configuratio#
+vlan 100
+ name SPAN-VLAN
+ remote-span
+
+monitor session 2 source interface Gig0/1
+monitor session 2 destination remote vlan 100
+
+#SW2 Configuratio#
+vlan 100
+ name SPAN-VLAN
+ remote-span
+
+monitor session 3 source interface Gig0/2
+monitor session 3 destination remote vlan 100
+
+#Verify Configuration#
+show monitor

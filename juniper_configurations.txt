@@ -1,0 +1,257 @@
+root@m4leaf01> show configuration | display set
+set version 18.1R3-S3.8
+set system host-name m4leaf01
+set system root-authentication encrypted-password "$6$nF.csIX3$f3.uRjvSc9W9ommj1Clz248nGdQHM/KozJ25pfXcaZFudqG8fADqvSEGtezX7aL1dOJoMWiBBATrJ37IrUi7s/"
+set system services ssh root-login allow
+set system syslog user * any emergency
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system syslog file interactive-commands interactive-commands any
+set interfaces et-0/0/52 description M4spine01-et-0/0/4
+set interfaces et-0/0/52 mtu 9192
+set interfaces et-0/0/52 unit 0 family inet address 10.80.224.17/31
+set interfaces et-0/0/53 description M4spine02-et-0/0/4
+set interfaces et-0/0/53 mtu 9192
+set interfaces et-0/0/53 unit 0 family inet address 10.80.224.19/31
+set interfaces em0 unit 0 family inet address 10.80.222.74/27
+set interfaces lo0 unit 0 family inet address 10.80.224.135/32
+set forwarding-options storm-control-profiles default all
+set routing-options static route 0.0.0.0/0 next-hop 10.80.222.65
+set routing-options router-id 10.80.224.135
+set routing-options forwarding-table export LOAD_BALANCE_PERFLOW
+set routing-options forwarding-table ecmp-fast-reroute
+set protocols ospf area 0.0.0.0 interface em0.0 disable
+set protocols ospf area 0.0.0.0 interface lo0.0 passive
+set protocols ospf area 0.0.0.0 interface et-0/0/52.0
+set protocols ospf area 0.0.0.0 interface et-0/0/53.0
+set protocols lldp port-id-subtype interface-name
+set protocols lldp interface all
+set protocols lldp-med interface all
+set protocols igmp-snooping vlan default
+set policy-options policy-statement LOAD_BALANCE_PERFLOW term 1 then load-balance per-packet
+
+root@m4leaf02> show configuration | display set
+set version 18.1R3-S3.8
+set system host-name m4leaf02
+set system root-authentication encrypted-password "$6$2i3oZCjU$ZVk3a/soLUrEplytuJhKv9Q.VhCaTkAdS8jlEzLKO4J//Fm896e1xwVsYbWza25G3Sf1hB9u/.nSImDpFHors/"
+set system services ssh root-login allow
+set system syslog user * any emergency
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system syslog file interactive-commands interactive-commands any
+set interfaces et-0/0/52 description M4spine01-et-0/0/5
+set interfaces et-0/0/52 mtu 9192
+set interfaces et-0/0/52 unit 0 family inet address 10.80.224.21/31
+set interfaces et-0/0/53 description M4spine02-et-0/0/5
+set interfaces et-0/0/53 mtu 9192
+set interfaces et-0/0/53 unit 0 family inet address 10.80.224.23/31
+set interfaces em0 unit 0 family inet address 10.80.222.75/27
+set interfaces lo0 unit 0 family inet address 10.80.224.136/32
+set forwarding-options storm-control-profiles default all
+set routing-options static route 0.0.0.0/0 next-hop 10.80.222.65
+set routing-options router-id 10.80.224.136
+set routing-options forwarding-table export LOAD_BALANCE_PERFLOW
+set routing-options forwarding-table ecmp-fast-reroute
+set protocols ospf area 0.0.0.0 interface lo0.0 passive
+set protocols ospf area 0.0.0.0 interface em0.0 disable
+set protocols ospf area 0.0.0.0 interface et-0/0/52.0
+set protocols ospf area 0.0.0.0 interface et-0/0/53.0
+set protocols lldp port-id-subtype interface-name
+set protocols lldp interface all
+set protocols lldp-med interface all
+set protocols igmp-snooping vlan default
+set policy-options policy-statement LOAD_BALANCE_PERFLOW term 1 then load-balance per-packet
+
+root@m4asw01> show configuration | display set
+set version 17.3R3-S3.3
+set system host-name m4asw01
+set system root-authentication encrypted-password "$6$eUwH8lZT$Og8ntwPA3cy0.WHWstsFDQeHKBCJciPl/cdKpIm14t5a/8ksJEOGy/Jp2IGf168b.FPaNmpPRgjLF4biQbwXC/"
+set system services ssh root-login allow
+set system syslog user * any emergency
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system syslog file interactive-commands interactive-commands any
+set system extensions providers juniper license-type juniper deployment-scope commercial
+set system extensions providers chef license-type juniper deployment-scope commercial
+set chassis alarm management-ethernet link-down ignore
+set interfaces et-0/0/52 description M4spine01-et-0/0/2
+set interfaces et-0/0/52 mtu 9192
+set interfaces et-0/0/52 unit 0 family inet address 10.80.224.9/31
+set interfaces et-0/0/53 description M4spine02-et-0/0/2
+set interfaces et-0/0/53 mtu 9192
+set interfaces et-0/0/53 unit 0 family inet address 10.80.224.11/31
+set interfaces em0 unit 0 family inet address 10.80.222.72/27
+set interfaces lo0 unit 0 family inet address 10.80.224.133/32
+set forwarding-options storm-control-profiles default all
+set routing-options static route 0.0.0.0/0 next-hop 10.80.222.65
+set routing-options router-id 10.80.224.133
+set routing-options autonomous-system 65200
+set routing-options forwarding-table export LOAD_BALANCE_PERFLOW
+set routing-options forwarding-table ecmp-fast-reroute
+set protocols ospf area 0.0.0.0 interface em0.0 disable
+set protocols ospf area 0.0.0.0 interface lo0.0 passive
+set protocols ospf area 0.0.0.0 interface et-0/0/52.0
+set protocols ospf area 0.0.0.0 interface et-0/0/53.0
+set protocols lldp port-id-subtype interface-name
+set protocols lldp interface all
+set protocols lldp-med interface all
+set protocols igmp-snooping vlan default
+set policy-options policy-statement LOAD_BALANCE_PERFLOW term 1 then load-balance per-packet
+
+root@m4asw02> show configuration | display set
+set version 17.3R3-S3.3
+set system host-name m4asw02
+set system root-authentication encrypted-password "$6$Amf3/jkT$wxD9gjfgvr.GzxN0cV.sN5ICYIWujbiHWl9Srw9UFOfdiBJtRqB5qU3/5ErC5wMg9r1GO0/WrOFcqzDeJ8T8k."
+set system services ssh root-login allow
+set system syslog user * any emergency
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system syslog file interactive-commands interactive-commands any
+set system extensions providers juniper license-type juniper deployment-scope commercial
+set system extensions providers chef license-type juniper deployment-scope commercial
+set chassis alarm management-ethernet link-down ignore
+set interfaces et-0/0/52 description M4spine01-et-0/0/3
+set interfaces et-0/0/52 mtu 9192
+set interfaces et-0/0/52 unit 0 family inet address 10.80.224.13/31
+set interfaces et-0/0/53 description M4spine02-et-0/0/3
+set interfaces et-0/0/53 mtu 9192
+set interfaces et-0/0/53 unit 0 family inet address 10.80.224.15/31
+set interfaces em0 unit 0 family inet address 10.80.222.73/27
+set interfaces lo0 unit 0 family inet address 10.80.224.134/32
+set forwarding-options storm-control-profiles default all
+set routing-options static route 0.0.0.0/0 next-hop 10.80.222.65
+set routing-options router-id 10.80.224.134
+set routing-options autonomous-system 65201
+set routing-options forwarding-table export LOAD_BALANCE_PERFLOW
+set routing-options forwarding-table ecmp-fast-reroute
+set protocols ospf area 0.0.0.0 interface em0.0 disable
+set protocols ospf area 0.0.0.0 interface lo0.0 passive
+set protocols ospf area 0.0.0.0 interface et-0/0/53.0
+set protocols ospf area 0.0.0.0 interface et-0/0/52.0
+set protocols lldp port-id-subtype interface-name
+set protocols lldp interface all
+set protocols lldp-med interface all
+set protocols igmp-snooping vlan default
+set policy-options policy-statement LOAD_BALANCE_PERFLOW term 1 then load-balance per-packet
+
+root@m4spine01> show configuration | display set
+set version 17.3R3-S3.3
+set system host-name m4spine01
+set system root-authentication encrypted-password "$6$MQ9X/zeb$zzDE2VgJ0mVU5zTiwSelGh1pj1cS4AeACqZRypOQlBNg4Iw6PfhzD9DuwjFAgffukXmQELfZLvFvz4JXeP98t."
+set system services ssh root-login allow
+set system syslog user * any emergency
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system syslog file interactive-commands interactive-commands any
+set chassis alarm management-ethernet link-down ignore
+set interfaces et-0/0/0 description M4bleaf01_et-/0/0/67
+set interfaces et-0/0/0 mtu 9192
+set interfaces et-0/0/0 unit 0 family inet address 10.80.224.0/31
+set interfaces et-0/0/1 description M4bleaf02-et-0/0/67
+set interfaces et-0/0/1 mtu 9192
+set interfaces et-0/0/1 unit 0 family inet address 10.80.224.4/31
+set interfaces et-0/0/2 description M4asw01-et-0/0/52
+set interfaces et-0/0/2 mtu 9192
+set interfaces et-0/0/2 unit 0 family inet address 10.80.224.8/31
+set interfaces et-0/0/3 description M4asw02-et-0/0/52
+set interfaces et-0/0/3 mtu 9192
+set interfaces et-0/0/3 unit 0 family inet address 10.80.224.12/31
+set interfaces et-0/0/4 description M4leaf01-et-0/0/52
+set interfaces et-0/0/4 mtu 9192
+set interfaces et-0/0/4 unit 0 family inet address 10.80.224.16/31
+set interfaces et-0/0/5 description M4leaf02-et-0/0/52
+set interfaces et-0/0/5 mtu 9192
+set interfaces et-0/0/5 unit 0 family inet address 10.80.224.20/31
+set interfaces em0 unit 0 family inet address 10.80.222.68/27
+set interfaces lo0 unit 0 family inet address 10.80.224.129/32
+set forwarding-options storm-control-profiles default all
+set routing-options static route 0.0.0.0/0 next-hop 10.80.222.65
+set routing-options router-id 10.80.224.129
+set routing-options forwarding-table export LOAD_BALANCE_PERFLOW
+set routing-options forwarding-table ecmp-fast-reroute
+set protocols ospf area 0.0.0.0 interface em0.0 disable
+set protocols ospf area 0.0.0.0 interface all
+set protocols ospf area 0.0.0.0 interface lo0.0 passive
+set protocols lldp port-id-subtype interface-name
+set protocols lldp interface all
+set protocols lldp-med interface all
+set protocols igmp-snooping vlan default
+set policy-options policy-statement LOAD_BALANCE_PERFLOW term 1 then load-balance per-packet
+
+root@m4spine02> show configuration | display set
+set version 17.3R3-S3.3
+set system host-name m4spine02
+set system root-authentication encrypted-password "$6$QJu1lijb$xiHOmZolfECK94ItrB4UE8D1PDXcvtcbvnnaWUBlbE/.EKZ647oYgssQOVvnUWeHSuU0PBCjBzQLXLouOY8D5/"
+set system services ssh root-login allow
+set system syslog user * any emergency
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system syslog file interactive-commands interactive-commands any
+set chassis alarm management-ethernet link-down ignore
+set interfaces et-0/0/0 description M4bleaf01-et-0/0/71
+set interfaces et-0/0/0 mtu 9192
+set interfaces et-0/0/0 unit 0 family inet address 10.80.224.2/31
+set interfaces et-0/0/1 description M4bleaf02-et-0/0/71
+set interfaces et-0/0/1 mtu 9192
+set interfaces et-0/0/1 unit 0 family inet address 10.80.224.6/31
+set interfaces et-0/0/2 description M4asw01-et-0/0/53
+set interfaces et-0/0/2 mtu 9192
+set interfaces et-0/0/2 unit 0 family inet address 10.80.224.10/31
+set interfaces et-0/0/3 description M4asw02-et-0/0/53
+set interfaces et-0/0/3 mtu 9192
+set interfaces et-0/0/3 unit 0 family inet address 10.80.224.14/31
+set interfaces et-0/0/4 description M4leaf01-et-0/0/53
+set interfaces et-0/0/4 mtu 9192
+set interfaces et-0/0/4 unit 0 family inet address 10.80.224.18/31
+set interfaces et-0/0/5 description M4leaf02-et-0/0/53
+set interfaces et-0/0/5 mtu 9192
+set interfaces et-0/0/5 unit 0 family inet address 10.80.224.22/31
+set interfaces em0 unit 0 family inet address 10.80.222.69/27
+set interfaces lo0 unit 0 family inet address 10.80.224.130/32
+set forwarding-options storm-control-profiles default all
+set routing-options static route 0.0.0.0/0 next-hop 10.80.222.65
+set routing-options router-id 10.80.224.130
+set routing-options forwarding-table export LOAD_BALANCE_PERFLOW
+set routing-options forwarding-table ecmp-fast-reroute
+set protocols ospf area 0.0.0.0 interface em0.0 disable
+set protocols ospf area 0.0.0.0 interface all
+set protocols ospf area 0.0.0.0 interface lo0.0 passive
+set protocols lldp port-id-subtype interface-name
+set protocols lldp interface all
+set protocols lldp-med interface all
+set protocols igmp-snooping vlan default
+set policy-options policy-statement LOAD_BALANCE_PERFLOW term 1 then load-balance per-packet
+
+root@m4bleaf01> show configuration | display set
+set version 17.3R3-S3.3
+set system host-name m4bleaf01
+set system root-authentication encrypted-password "$1$eq.mevRr$1SrkXUpqi6Ken227DkL/1."
+set system services ssh root-login allow
+set system syslog user * any emergency
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system syslog file interactive-commands interactive-commands any
+set chassis fpc 0 pic 0 port 67 speed 100g
+set chassis fpc 0 pic 0 port 71 speed 100g
+set interfaces et-0/0/67 description M4spine01-et-0/0/0
+set interfaces et-0/0/67 mtu 9192
+set interfaces et-0/0/67 unit 0 family inet address 10.80.224.1/31
+set interfaces et-0/0/71 description M4spine02-et-0/0/0
+set interfaces et-0/0/71 mtu 9192
+set interfaces et-0/0/71 unit 0 family inet address 10.80.224.3/31
+set interfaces em0 unit 0 family inet address 10.80.222.70/27
+set interfaces lo0 unit 0 family inet address 10.80.224.131/32
+set forwarding-options storm-control-profiles default all
+set routing-options static route 0.0.0.0/0 next-hop 10.80.222.65
+set routing-options router-id 10.80.224.131
+set routing-options forwarding-table export LOAD_BALANCE_PERFLOW
+set routing-options forwarding-table ecmp-fast-reroute
+set protocols ospf area 0.0.0.0 interface em0.0 disable
+set protocols ospf area 0.0.0.0 interface lo0.0 passive
+set protocols ospf area 0.0.0.0 interface et-0/0/67.0
+set protocols ospf area 0.0.0.0 interface et-0/0/71.0
+set protocols lldp port-id-subtype interface-name
+set protocols lldp interface all
+set protocols lldp-med interface all
+set protocols igmp-snooping vlan default
+set policy-options policy-statement LOAD_BALANCE_PERFLOW term 1 then load-balance per-packet

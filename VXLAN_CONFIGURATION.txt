@@ -1,0 +1,184 @@
+----VXLAN Configuration----
+
+#Tr1Cas3!#
+
+#####UNDERLAY#####
+
+Nexus-1:
+
+feature ospf
+system jumbomtu 9216
+router ospf 10
+
+interface ethernet 1/1
+ no switchport
+ ip address 10.10.10.1/30
+ ip router ospf 10 area 0
+ no shut
+
+interface loopback 0
+ ip address 1.1.1.1/32
+ ip router ospf 10 area 0
+
+Nexus-2:
+
+feature ospf
+system jumbomtu 9216
+router ospf 10
+
+interface ethernet 1/1
+ no switchport
+ ip address 10.10.10.2/30
+ ip router ospf 10 area 0
+ no shut
+
+interface loopback 0
+ ip address 2.2.2.2/32
+ ip router ospf 10 area 0
+
+#####OVERLAY#####
+
+Both Peers:
+
+#Overlay Features#
+#BGP for peering#
+feature bgp
+feature interface-vlan
+feature vn-segment-vlan-based
+feature nv overlay
+#adds the address family for EVPN#
+nv overlay evpn
+
+#There is vMAC address on each switch for the Anycast Gateway. Making this the same on each means that any switch can respond as the default gateway.
+fabric forwarding anycast-gateway-mac 0000.2222.3333
+#This is used to change the way memory is partitioned for routes.
+system routing template-vxlan-scale
+
+Nexus-1:
+
+#The NVE interface is the VTEP. There is only one of these per switch. It uses the loopback interface to get its IP address.
+interface nve 1
+ no shutdown
+ source-interface loopback 0
+#We set BGP as the host-reachability protocol, which enables BGP control plane learning. If this isn’t enabled, then we’re using flood and learn.
+ host-reachability protocol bgp
+
+router bgp 65535
+ router-id 1.1.1.1
+ neighbor 2.2.2.2
+ remote-as 65535
+ update-source loopback 0
+#We enable the L2VPN EVPN address family, which lets MP-BGP carry MAC addresses. If this isn’t enabled, then we’re using flood and learn.
+ address-family l2vpn evpn
+#Extended communities are enabled. This is to support carrying route-target information.
+ send-community
+ send-community extended
+
+Nexus-2:
+
+interface nve 1
+ no shutdown
+ source-interface loopback 0
+ host-reachability protocol bgp
+
+router bgp 65535
+ router-id 2.2.2.2
+ neighbor 1.1.1.1
+ remote-as 65535
+ update-source loopback 0
+ address-family l2vpn evpn
+ send-community
+ send-community extended
+
+
+#####FIRST_NETWORK#####
+
+#vn-segment 1000100 = VLAN 100#
+
+#(VRF)#
+Both Peers:
+
+#Create BROADCAST VRF
+vrf context BROADCAST
+#The L3VNI defines the VRF within the fabric, and contains L3 routes for the VRF. This is the VNI associated to VLAN 100#
+vni 1000100
+#A Route Distinguisher is used to keep the VRF unique in the MP-BGP database. Setting the value automatically is the simplest option#
+rd auto
+#Route Targets are also assigned automatically. Automatic assignment is recommended unless you have a mixed-vendor environment#
+address-family ipv4 unicast
+route-target both auto
+route-target both auto evpn
+
+#(L3VNI)# Will allow routing on local switch and attaching VRF#
+#Associate VLAN 100 to 1000100
+vlan 100
+ vn-segment 1000100
+
+#The SVI and VRF represent the tenant’s routing boundary#
+int vlan 100
+no shutdown
+vrf member BROADCAST
+##Warning: Deleted all L3 config on interface Vlan100##
+#Enables the switch to take the decapsulated VxLAN packet, and forward it to the CPU or Supervisor for handling.
+ip forward
+
+
+router bgp 65535
+vrf BROADCAST
+address-family ipv4 unicast
+#This enables advertising EVPN routes (MAC addresses) within the VRF
+advertise l2vpn evpn
+
+interface nve1
+ member vni 5000
+ #Enables local switch to answer arp request without flooding#
+ suppress-arp
+ #Tells VTEP to use head end replication, works by VTEP creating several unicast packets and sending them to each remote VTEP that supports the VNI#
+  ingress-replication protocol bgp
+ #'associate-vrf' keyword Tells VTEP that this VNI will be used for routing#
+ member vni 1000100 associate-vrf
+
+#VLANs and VNIs for the Hosts#
+#(L2VNI) For Hosts#
+vlan 1000
+ vn-segment 5000
+
+#SVI for VLAN 1000#
+interface vlan 1000
+ no shutdown
+ vrf member BROADCAST
+ #This SVI is given the same IP address on each switch, which enables Anycast Gateway#
+ ip address 192.168.0.1/24
+ fabric forwarding mode anycast-gateway
+
+#Enable sharing EVPN routes (MAC addresses)#
+#In the MP-BGP database, L3 routes and L2 MAC addresses are in separate VRF’s#
+evpn
+ vni 5000 l2
+ rd auto
+ route-target import auto
+ route-target export auto
+
+
+###SHOW COMMANDS###
+
+#checking that BGP neighbors are forming#
+show bgp l2vpn evpn summary
+
+#This is where we can see the remote VTEPs that have been discovered#
+show nve peers
+
+#VNI’s that are associated with the local VTEP#
+show nve vni
+
+#Simple command to show VLAN to VxLAN (VN-Segment) bindings#
+show vxlan
+
+#As MAC addresses are learned, they are added here#
+show l2route evpn mac all
+
+#shows the IP to MAC relationship#
+show l2route evpn mac-ip all
+
+#Shows BGP Database#
+show bgp l2vpn evpn

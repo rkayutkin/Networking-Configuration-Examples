@@ -1,0 +1,21 @@
+#Configure access lists for SNMP. limit SNMP access to a local device to SNMP managers with 10.1.1.0/24#
+SW(config)# access-list 99 permit 10.1.1.0 0.0.0.255
+
+#Configure the SNMPv3 view. OPS view that will be used as both read and write views for the groupZ#
+SW(config)# snmp-server view OPS sysUpTime included
+SW(config)# snmp-server view OPS ifDescr included
+SW(config)# snmp-server view OPS ifAdminStatus included
+SW(config)# snmp-server view OPS ifOperStatus included
+
+#Configure the SNMPv3 group#
+SW(config)# snmp-server group groupZ v3 priv read OPS write OPS access 99
+
+#Configure the SNMPv3 user#
+SW(config)# snmp-server user userZ groupZ v3 auth sha itsasecret priv aes 256 anothersecret
+
+#Configure the SNMP trap receiver#
+SW(config)# snmp-server enable traps
+SW(config)# snmp-server host 10.1.1.50 traps version 3 priv userZ cpu port-security
+
+#Configure an interface index persistence. Guarantee index persistence over device reboots#
+SW(config)# snmp-server ifindex persist

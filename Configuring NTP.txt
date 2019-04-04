@@ -1,0 +1,39 @@
+#Routers will synchronize with NTP server over internet#
+#In this case it will be R1 and R2#
+
+ntp server 209.165.201.44
+ntp server 209.165.201.111
+ntp server 209.165.201.133
+ntp server 209.165.201.222
+ntp server 209.165.201.233 prefer
+clock timezone CET +2
+clock summer-time CET recurring
+
+#Core/Distribution Switches will sync with routers, pointing to loopback 0 IP#
+#In this case DSW1 and DSW2#
+
+ntp server 192.168.101.10
+ntp server 192.168.102.10
+clock timezone CET +2
+clock summer-time CET recurring
+
+#Access Switches will also sync with routers#
+#In this case just SW#
+
+ip route 0.0.0.0 0.0.0.0 192.168.1.254
+ntp server 192.168.101.10
+ntp server 192.168.102.10
+clock timezone CET +2
+clock summer-time CET recurring
+
+#Make sure that R1 and R2 provide a clock sync even when internet is down#
+#Will be configured on R1 and R2, stratum 10 insures it will only be used when internet is down#
+
+ntp master 10
+
+#Secure R1 and R2 from advertising their time information to the Internet#
+
+access-list 1 permit 127.127.1.1
+access-list 2 permit 192.168.0.0 0.0.255.255
+ntp access-group peer 1
+ntp access-group serve-only 2

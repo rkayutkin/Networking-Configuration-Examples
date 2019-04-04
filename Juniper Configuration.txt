@@ -1,0 +1,105 @@
+
+set version 17.3R3-S3.3
+set system host-name m4bleaf02
+set system root-authentication encrypted-password "$1$eq.mevRr$1SrkXUpqi6Ken227DkL/1."
+set system services ssh root-login allow
+set system syslog user * any emergency
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system syslog file interactive-commands interactive-commands any
+set interfaces et-0/0/67 description M4spine01-et-0/0/1
+set interfaces et-0/0/67 mtu 9192
+set interfaces et-0/0/67 unit 0 family inet address 10.80.224.5/31
+set interfaces et-0/0/71 description M4spine02-et-0/0/1
+set interfaces et-0/0/71 mtu 9192
+set interfaces et-0/0/71 unit 0 family inet address 10.80.224.7/31
+set interfaces em0 unit 0 family inet address 10.80.222.71/27
+set interfaces lo0 unit 0 family inet address 10.80.224.132/32
+set forwarding-options storm-control-profiles default all
+set routing-options static route 0.0.0.0/0 next-hop 10.80.222.65
+set routing-options router-id 10.80.224.132
+set routing-options forwarding-table export LOAD_BALANCE_PERFLOW
+set routing-options forwarding-table ecmp-fast-reroute
+set protocols ospf area 0.0.0.0 interface em0.0 disable
+set protocols ospf area 0.0.0.0 interface lo0.0 passive
+set protocols ospf area 0.0.0.0 interface et-0/0/67.0
+set protocols ospf area 0.0.0.0 interface et-0/0/71.0
+set protocols lldp port-id-subtype interface-name
+set protocols lldp interface all
+set protocols lldp-med interface all
+set protocols igmp-snooping vlan default
+set policy-options policy-statement LOAD_BALANCE_PERFLOW term 1 then load-balance per-packet
+_________________
+
+set routing-options autonomous-system 65500
+set protocols bgp group EVPN_IBGP_OVERLAY type internal
+set protocols bgp group EVPN_IBGP_OVERLAY local-address 10.80.224.132
+set protocols bgp group EVPN_IBGP_OVERLAY family evpn signaling
+set protocols bgp group EVPN_IBGP_OVERLAY vpn-apply-export
+set protocols bgp group EVPN_IBGP_OVERLAY local-as 65500
+set protocols bgp group EVPN_IBGP_OVERLAY bfd-liveness-detection minimum-interval 350
+set protocols bgp group EVPN_IBGP_OVERLAY bfd-liveness-detection multiplier 3
+set protocols bgp group EVPN_IBGP_OVERLAY bfd-liveness-detection session-mode automatic
+set protocols bgp group EVPN_IBGP_OVERLAY multipath
+set protocols bgp group EVPN_IBGP_OVERLAY neighbor 10.80.224.129
+set protocols bgp group EVPN_IBGP_OVERLAY neighbor 10.80.224.130
+set protocols evpn encapsulation vxlan
+set protocols evpn extended-vni-list all
+set policy-options policy-statement EVPN_VRF_IMPORT term switch_options_comm from community switch_options_comm
+set policy-options policy-statement EVPN_VRF_IMPORT term switch_options_comm then accept
+set policy-options community switch_options_comm members target:65500:2
+set switch-options vtep-source-interface lo0.0
+set switch-options route-distinguisher 10.80.224.132:1
+set switch-options vrf-target target:65500:2
+set switch-options vrf-target auto
+
+
+
+interface vlan 155
+ip dhcp relay address 10.1.192.200
+
+
+
+vn-segment 1000100 = VLAN 100
+vn-segment 1000110 = VLAN 110
+
+
+
+leaf021201.oma2#
+
+interface Vlan3001
+  description 10.58.11.0/25-Data-R2C12
+  no shutdown
+  mtu 9216
+  no ip redirects
+  ip address 10.58.11.2/25
+  ip ospf passive-interface
+  ip router ospf 58 area 0.0.0.0
+  ip pim sparse-mode
+  hsrp version 2
+  hsrp 3001
+    preempt
+    priority 110
+    ip 10.58.11.1
+
+vlan 3001
+ name 10.58.11.0/25-Data-R2C12
+
+leaf021202.oma2#
+interface Vlan3001
+  description 10.58.11.0/25-Data-R2C12
+  no shutdown
+  mtu 9216
+  no ip redirects
+  ip address 10.58.11.3/25
+  ip ospf passive-interface
+  ip router ospf 58 area 0.0.0.0
+  ip pim sparse-mode
+  hsrp version 2
+  hsrp 3001
+    preempt
+    priority 105
+    ip 10.58.11.1
+
+vlan 3001
+ name 10.58.11.0/25-Data-R2C12

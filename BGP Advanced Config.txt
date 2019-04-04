@@ -1,0 +1,614 @@
+_____R1: (Route-Reflector)_____
+
+interface Loopback0
+ ip address 1.1.1.1 255.255.255.0
+ no shut
+
+interface FastEthernet1/0
+ no switchport
+ ip address 192.168.12.1 255.255.255.0
+ no shut
+
+interface FastEthernet1/1
+ no switchport
+ ip address 192.168.13.1 255.255.255.0
+ no shut
+
+router rip
+ version 2
+ no auto-summary
+ network 192.168.12.0
+ network 192.168.13.0
+ network 1.1.1.0 
+
+!IBGP Configuration!
+router bgp 100
+ no auto-summary
+ neighbor ibgp peer-group
+ neighbor ibgp remote-as 100
+ neighbor ibgp route-reflector-client
+ neighbor ibgp update-source loopback 0
+ neighbor 2.2.2.2 peer-group ibgp
+ neighbor 3.3.3.3 peer-group ibgp
+
+!Redistribute all connected routes to advertise to BGP!
+router bgp 100
+ redistribute connected
+
+!Create another loopback interface on R1 with ip address 172.16.1.1 /24, advertise this in RIP!
+interface loopback 1
+ ip address 172.16.1.1 255.255.255.0
+ no shut
+
+router rip
+ network 172.16.1.0
+
+
+_____R2:_____
+
+interface Loopback0
+ ip address 2.2.2.2 255.255.255.0
+ no shut
+
+interface FastEthernet1/0
+ no switchport
+ ip address 192.168.12.2 255.255.255.0
+ no shut
+
+interface FastEthernet1/2
+ no switchport
+ ip address 192.168.24.2 255.255.255.0
+ no shut
+
+router rip
+ version 2
+ no auto-summary
+ network 192.168.12.0
+ network 2.2.2.0 
+
+!IBGP Configuration!
+router bgp 100
+ no auto-summary
+ neighbor 1.1.1.1 remote-as 100
+ neighbor 1.1.1.1 update-source loopback 0
+ neighbor 1.1.1.1 next-hop-self
+
+!EBGP Configuration!
+router bgp 100
+ neighbor 4.4.4.4 remote-as 300
+ neighbor 4.4.4.4 update-source loopback 0
+ neighbor 4.4.4.4 ebgp-multihop 2 
+
+ !Static route for the loopback to be reachable or you can redistribute connected!
+ip route 4.4.4.4 255.255.255.255 192.168.24.4
+
+!Redistribute all connected routes to advertise to BGP!
+router bgp 100
+ redistribute connected
+
+!route-map with a higher metric for R4 to prefer the path through R3!
+route-map TOR4 permit 10
+ match ip address 1
+ set metric 100
+!
+route-map TOR4 permit 20
+!
+access-list 1 permit 1.1.1.0 0.0.0.255
+!
+router bgp 100
+neighbor 4.4.4.4 route-map TOR4 out
+
+_____R3:_____
+
+interface Loopback0
+ ip address 3.3.3.3 255.255.255.0
+
+interface FastEthernet1/1
+ no switchport
+ ip address 192.168.13.3 255.255.255.0
+ no shut
+
+interface FastEthernet1/3
+ no switchport
+ ip address 192.168.34.3 255.255.255.0
+ no shut
+
+router rip
+ version 2
+ no auto-summary
+ network 192.168.13.0
+ network 3.3.3.0 
+
+!IBGP Configuration!
+router bgp 100
+ no auto-summary
+ neighbor 1.1.1.1 remote-as 100
+ neighbor 1.1.1.1 update-source loopback 0
+ neighbor 1.1.1.1 next-hop-self
+
+!EBGP Configuration!
+router bgp 100
+ neighbor 4.4.4.4 remote-as 300
+ neighbor 4.4.4.4 update-source loopback 0
+ neighbor 4.4.4.4 ebgp-multihop 2
+
+ !Static route for the loopback to be reachable or you can redistribute connected!
+ip route 4.4.4.4 255.255.255.255 192.168.34.4
+
+!Redistribute all connected routes to advertise to BGP!
+router bgp 100
+ redistribute connected
+
+_____R4: (Confederation)_____
+
+interface Loopback0
+ ip address 4.4.4.4 255.255.255.0
+
+interface FastEthernet1/2
+ no switchport
+ ip address 192.168.24.4 255.255.255.0
+ no shut
+
+interface FastEthernet1/3
+ no switchport
+ ip address 192.168.34.4 255.255.255.0
+ no shut
+
+interface FastEthernet1/4
+ no switchport
+ ip address 192.168.45.4 255.255.255.0
+ no shut
+
+interface FastEthernet1/14
+ no switchport
+ ip address 192.168.46.4 255.255.255.0
+ no shut
+
+router ospf 1
+ network 192.168.45.0 0.0.0.255 area 0
+ network 4.4.4.0 0.0.0.255 area 0
+
+!IBGP Configuration!
+router bgp 10
+ no auto-summary
+ bgp confederation identifier 300
+ bgp confederation peers 20
+ neighbor 5.5.5.5 remote-as 10
+ neighbor 5.5.5.5 update-source loopback 0
+ neighbor 5.5.5.5 next-hop-self
+
+ !EBGP Configuration!
+router bgp 10
+ neighbor ebgp peer-group
+ neighbor ebgp remote-as 100
+ neighbor ebgp update-source loopback 0
+ neighbor ebgp ebgp-multihop 2
+ neighbor 2.2.2.2 peer-group ebgp 
+ neighbor 3.3.3.3 peer-group ebgp 
+ neighbor 6.6.6.6 remote-as 200
+ neighbor 6.6.6.6 update-source loopback 0
+ neighbor 6.6.6.6 ebgp-multihop 2
+
+ !Static route for the loopback to be reachable or you can redistribute connected!
+ip route 2.2.2.2 255.255.255.255 192.168.24.2
+ip route 3.3.3.3 255.255.255.255 192.168.34.3
+ip route 6.6.6.6 255.255.255.255 192.168.46.6
+
+!Redistribute all connected routes to advertise to BGP!
+router bgp 10
+ redistribute connected
+
+!When R4 sends a ping to the 172.16.1.1 address it should take the path through R3, you are only allowed to make changes on R4!
+route-map FROMR3 permit 10
+ match ip address 1
+ set weight 5000
+! 
+route-map FROMR3 permit 20
+!
+access-list 1 permit 172.16.1.0 0.0.0.255
+!
+router bgp 10
+neighbor 3.3.3.3 route-map FROMR3 in
+
+_____R5:_____
+
+interface Loopback0
+ ip address 5.5.5.5 255.255.255.0
+
+interface FastEthernet1/4
+ no switchport
+ ip address 192.168.45.5 255.255.255.0
+ no shut
+ 
+interface FastEthernet1/5
+ no switchport
+ ip address 192.168.58.5 255.255.255.0
+ no shut
+
+interface FastEthernet1/15
+ no switchport
+ ip address 192.168.56.5 255.255.255.0
+ no shut
+
+router ospf 1
+ network 192.168.45.0 0.0.0.255 area 0
+ network 192.168.58.0 0.0.0.255 area 0
+ network 5.5.5.0 0.0.0.255 area 0
+ 
+ !IBGP Configuration!
+router bgp 10
+ no auto-summary
+ bgp confederation identifier 300
+ bgp confederation peers 20
+ neighbor 4.4.4.4 remote-as 10
+ neighbor 4.4.4.4 update-source loopback 0
+ neighbor 8.8.8.8 remote-as 20
+ neighbor 8.8.8.8 update-source loopback 0
+ neighbor 8.8.8.8 ebgp-multihop 2
+
+ !EBGP Configuration!
+router bgp 10
+ neighbor 6.6.6.6 remote-as 200
+ neighbor 6.6.6.6 update-source loopback 0
+ neighbor 6.6.6.6 ebgp-multihop 2
+
+ !Static route for the loopback to be reachable or you can redistribute connected!
+ip route 6.6.6.6 255.255.255.255 192.168.56.6
+
+!Redistribute all connected routes to advertise to BGP!
+router bgp 10
+ redistribute connected
+
+router bgp 10
+no neighbor 8.8.8.8 route-map TOR8 in
+
+no access-list 2 permit 11.11.11.0 0.0.0.255
+
+no route-map TOR8 permit 10
+ match ip address 2
+ set local-preference 150
+!
+no route-map TOR8 permit 20
+
+
+_____R6:_____
+
+interface Loopback0
+ ip address 6.6.6.6 255.255.255.0
+
+interface FastEthernet1/14
+ no switchport
+ ip address 192.168.46.6 255.255.255.0
+ no shut
+
+interface FastEthernet1/0
+ no switchport
+ ip address 192.168.67.6 255.255.255.0
+ no shut
+
+interface FastEthernet1/6
+ no switchport
+ ip address 192.168.76.6 255.255.255.0
+ no shut
+
+interface FastEthernet1/15
+ no switchport
+ ip address 192.168.56.6 255.255.255.0
+ no shut
+
+router eigrp 200
+ no auto-summary
+ network 192.168.67.0
+ network 6.6.6.0
+
+ !IBGP Configuration!
+router bgp 200
+ no auto-summary
+ neighbor 7.7.7.7 remote-as 200
+ neighbor 7.7.7.7 update-source loopback 0
+ neighbor 7.7.7.7 next-hop-self
+
+ !EBGP Configuration!
+router bgp 200
+ neighbor ebgp peer-group
+ neighbor ebgp remote-as 300
+ neighbor ebgp update-source loopback 0
+ neighbor ebgp ebgp-multihop 2
+ neighbor 4.4.4.4 peer-group ebgp 
+ neighbor 5.5.5.5 peer-group ebgp
+ neighbor 10.10.10.10 remote-as 400
+ neighbor 10.10.10.10 update-source loopback 0
+ neighbor 10.10.10.10 ebgp-multihop 2
+
+ !Static route for the loopback to be reachable or you can redistribute connected!
+ip route 4.4.4.4 255.255.255.255 192.168.46.4
+ip route 5.5.5.5 255.255.255.255 192.168.56.5
+ip route 10.10.10.10 255.255.255.255 192.168.76.10
+
+!Redistribute all connected routes to advertise to BGP!
+router bgp 200
+ redistribute connected
+
+!When R6 sends a ping towards the loopback interface on R11 it should go through AS300!
+no route-map FROMR5 permit 10
+ match ip address 1
+ set local-preference 150
+!
+no route-map FROMR5 permit 20
+!
+no access-list 1 permit 11.11.11.0 0.0.0.255
+!
+router bgp 200
+ no neighbor 5.5.5.5 route-map FROMR5 in
+
+_____R7:_____
+
+interface Loopback0
+ ip address 7.7.7.7 255.255.255.0
+
+interface FastEthernet1/0
+ no switchport
+ ip address 192.168.67.7 255.255.255.0
+ no shut
+
+interface FastEthernet1/6
+ no switchport
+ ip address 192.168.117.7 255.255.255.0
+ no shut
+
+router eigrp 200
+ no auto-summary
+ network 192.168.67.0
+ network 7.7.7.0
+
+!IBGP Configuration!
+router bgp 200
+ no auto-summary
+ neighbor 6.6.6.6 remote-as 200
+ neighbor 6.6.6.6 update-source loopback 0
+
+!EBGP Configuration!
+router bgp 200
+ neighbor 11.11.11.11 remote-as 400
+ neighbor 11.11.11.11 update-source loopback 0
+ neighbor 11.11.11.11 ebgp-multihop 2
+
+ !Static route for the loopback to be reachable or you can redistribute connected!
+ip route 11.11.11.11 255.255.255.255 192.168.117.11
+
+!password for BGP peering between R7 and R11!
+router bgp 200
+ neighbor 11.11.11.11 password VAULT
+
+!Redistribute all connected routes to advertise to BGP!
+router bgp 200
+ redistribute connected
+
+R8:
+
+interface Loopback0
+ ip address 8.8.8.8 255.255.255.0
+
+interface FastEthernet1/6
+ no switchport
+ ip address 192.168.89.8 255.255.255.0
+ no shut
+
+interface FastEthernet1/14
+ no switchport
+ ip address 192.168.99.8 255.255.255.0
+ no shut
+
+interface FastEthernet1/5
+ no switchport
+ ip address 192.168.58.8 255.255.255.0
+ no shut
+
+router ospf 1
+ network 192.168.58.0 0.0.0.255 area 0
+ network 192.168.89.0 0.0.0.255 area 0
+ network 8.8.8.0 0.0.0.255 area 0
+
+!IBGP Configuration!
+router bgp 20
+ no auto-summary
+ bgp confederation identifier 300
+ bgp confederation peers 10
+ neighbor 9.9.9.9 remote-as 20
+ neighbor 9.9.9.9 update-source loopback 0
+ neighbor 9.9.9.9 next-hop-self
+ neighbor 5.5.5.5 remote-as 10
+ neighbor 5.5.5.5 update-source loopback 0
+ neighbor 5.5.5.5 ebgp-multihop 2
+
+!EBGP Configuration!
+router bgp 20
+neighbor 10.10.10.10 remote-as 400
+neighbor 10.10.10.10 update-source loopback 0
+neighbor 10.10.10.10 ebgp-multihop 2
+
+ !Static route for the loopback to be reachable or you can redistribute connected!
+ip route 10.10.10.10 255.255.255.255 192.168.99.10
+
+!Redistribute all connected routes to advertise to BGP!
+router bgp 20
+ redistribute connected
+
+_____R9:_____
+
+interface Loopback0
+ ip address 9.9.9.9 255.255.255.0
+
+interface FastEthernet1/15
+ no switchport
+ ip address 192.168.109.9 255.255.255.0
+ no shut
+
+interface FastEthernet1/6
+ no switchport
+ ip address 192.168.89.9 255.255.255.0
+ no shut
+
+router ospf 1
+ network 192.168.89.0 0.0.0.255 area 0
+ network 9.9.9.0 0.0.0.255 area 0
+
+!IBGP Configuration!
+router bgp 20
+ no auto-summary
+ bgp confederation identifier 300
+ bgp confederation peers 10
+ neighbor 8.8.8.8 remote-as 20
+ neighbor 8.8.8.8 update-source loopback 0
+
+!EBGP Configuration!
+router bgp 20
+neighbor 10.10.10.10 remote-as 400
+neighbor 10.10.10.10 update-source loopback 0
+neighbor 10.10.10.10 ebgp-multihop 2
+
+ !Static route for the loopback to be reachable or you can redistribute connected!
+ip route 10.10.10.10 255.255.255.255 192.168.109.10
+
+!Redistribute all connected routes to advertise to BGP!
+router bgp 20
+ redistribute connected
+
+_____R10:_____
+
+interface Loopback0
+ ip address 10.10.10.10 255.255.255.0
+
+interface FastEthernet1/0
+ no switchport
+ ip address 192.168.110.10 255.255.255.0
+ no shut
+
+interface FastEthernet1/6
+ no switchport
+ ip address 192.168.76.10 255.255.255.0
+ no shut
+
+interface FastEthernet1/15
+ no switchport
+ ip address 192.168.109.10 255.255.255.0
+ no shut
+
+interface FastEthernet1/14
+ no switchport
+ ip address 192.168.99.10 255.255.255.0
+ no shut
+
+router ospf 1
+ network 192.168.110.0 0.0.0.255 area 0
+ network 10.10.10.0 0.0.0.255 area 0
+
+!IBGP Configuration!
+router bgp 400
+ no auto-summary
+ neighbor 11.11.11.11 remote-as 400
+ neighbor 11.11.11.11 update-source loopback 0
+ neighbor 11.11.11.11 next-hop-self
+
+ !EBGP Configuration!
+router bgp 400
+ neighbor ebgp peer-group
+ neighbor ebgp remote-as 300
+ neighbor ebgp update-source loopback 0
+ neighbor ebgp ebgp-multihop 2
+ neighbor 8.8.8.8 peer-group ebgp 
+ neighbor 9.9.9.9 peer-group ebgp
+ neighbor 6.6.6.6 remote-as 200
+ neighbor 6.6.6.6 update-source loopback 0
+ neighbor 6.6.6.6 ebgp-multihop 2
+
+ !Static route for the loopback to be reachable or you can redistribute connected!
+ip route 6.6.6.6 255.255.255.255 192.168.76.6
+ip route 8.8.8.8 255.255.255.255 192.168.99.8
+ip route 9.9.9.9 255.255.255.255 192.168.109.9
+
+!Redistribute all connected routes to advertise to BGP!
+router bgp 400
+ redistribute connected
+
+access-list 3 permit 11.11.11.0 0.0.0.255
+!
+route-map PREPEND permit 10
+ match ip address 3
+ set as-path prepend 400 400 400 400
+!
+route-map PREPEND permit 20
+!
+router bgp 400
+neighbor 6.6.6.6 route-map PREPEND out
+
+_____R11:_____
+
+interface Loopback0
+ ip address 11.11.11.11 255.255.255.0
+
+interface FastEthernet1/6
+ no switchport
+ ip address 192.168.117.11 255.255.255.0
+ no shut
+
+interface FastEthernet1/0
+ no switchport
+ ip address 192.168.110.11 255.255.255.0
+ no shut
+
+router ospf 1
+ network 192.168.110.0 0.0.0.255 area 0
+ network 11.11.11.0 0.0.0.255 area 0
+
+!IBGP Configuration!
+router bgp 400
+ no auto-summary
+ neighbor 10.10.10.10 remote-as 400
+ neighbor 10.10.10.10 update-source loopback 0
+
+ !EBGP Configuration!
+router bgp 400
+ neighbor 7.7.7.7 remote-as 200
+ neighbor 7.7.7.7 update-source loopback 0
+ neighbor 7.7.7.7 ebgp-multihop 2
+
+ !Static route for the loopback to be reachable or you can redistribute connected!
+ip route 7.7.7.7 255.255.255.255 192.168.117.7
+
+!password for BGP peering between R7 and R11!
+router bgp 400
+ neighbor 7.7.7.7 password VAULT
+
+!Redistribute all connected routes to advertise to BGP!
+router bgp 400
+ redistribute connected
+!
+access-list 3 permit 11.11.11.0 0.0.0.255
+!
+route-map PREPEND permit 10
+ match ip address 3
+ set as-path prepend 400 400 400 400
+!
+route-map PREPEND permit 20
+!
+router bgp 400
+neighbor 7.7.7.7 route-map PREPEND out
+
+_____Ping Script_____
+
+!ping script using tclsh!
+tclsh
+foreach address {
+1.1.1.1
+2.2.2.2
+3.3.3.3
+4.4.4.4
+5.5.5.5
+6.6.6.6
+7.7.7.7
+8.8.8.8
+9.9.9.9
+10.10.10.10
+11.11.11.11} {ping $address} 
+

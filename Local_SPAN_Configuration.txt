@@ -1,0 +1,13 @@
+##Local Switch##
+
+#1. Associate the SPAN session number with source ports or VLANs.#
+#2. Associate the SPAN session number with the destination.#
+
+##Configure the Source##
+monitor session 1 source Gig0/1
+
+##Configure the Destination##
+monitor session 1 destination Gig0/2
+
+#Verify Configuration#
+show monitor

@@ -1,0 +1,28 @@
+BGP Communities
+
+Router Sending the community
+
+route-map SENDCOMMUNITY permit 10
+ match ip address 1
+ set community 100:100
+
+access-list 1 permit 23.23.23.0 0.0.0.255 
+
+ip bgp-community new-format
+
+router bgp 2
+ neighbor 192.168.13.1 route-map SENDCOMMUNITY out
+ neighbor 192.168.13.1 send-community both
+
+Router Matching based on that community
+
+route-map MATCHCOMMUNITY permit 10
+ match community 1
+ set weight 5000
+
+ip bgp-community new-format
+
+ip community-list 1 permit 100:100
+
+router bgp 1
+ neighbor 192.168.13.3 route-map MATCHCOMMUNITY in
