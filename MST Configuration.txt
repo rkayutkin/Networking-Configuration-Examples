@@ -8,7 +8,7 @@ revision 1
 instance 1 vlan 10-25
 instance 2 vlan 26-50
 
-spanning-tree mode mst 
+spanning-tree mode mst
 
 SW1 root for instance 1:
 spanning-tree mst 1 root primary
@@ -17,7 +17,3 @@ spanning-tree mst 2 root secomdary
 SW2 root for instance 2:
 spanning-tree mst 2 root primary
 spanning-tree mst 1 root secondary
-
-
-
-
