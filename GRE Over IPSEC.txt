@@ -1,0 +1,76 @@
+--- GRE Over IPSEC ---
+
+-- Router A:
+
+- Create ISAKMP Polocy:
+crypto isakmp policy 10
+ encryption 3des
+ authentication pre-share
+ hash md5
+ group 2
+
+- Create the key and indicate the peer IP:
+crypto isakmp key abcd1234 address 192.168.1.2
+- Create the trnasform-set:
+crypto ipsec transform-set boson esp-3des esp-md5-hmac
+
+- Create the crypto-map profile:
+crypto map exsim 1 ipsec-isakmp
+set peer 192.168.1.2 
+set transform-set boson
+match address 101
+
+- ACL for encrypted traffic: 
+access-list 101 permit gre host 192.168.1.1 host 192.168.1.2
+
+- Apply the crypto map on the physical interface:
+interface f0/0
+crypto map exsim
+
+- Create the tunnel interface and specify the physical interface IP of source and destinataion:
+interface tunnel 0
+ip address 192.168.100.1 255.255.255.252
+tunnel source 192.168.1.1
+tunnel destination 192.168.1.2
+
+- Create a static route and point to tunnel interface:
+ip route 10.2.2.0 255.255.255.0 tunnel 0
+
+
+-- Router B:
+
+- Create ISAKMP Polocy:
+crypto isakmp policy 10
+ encryption 3des
+ authentication pre-share
+ hash md5
+ group 2
+
+- Create the key and indicate the peer IP:
+crypto isakmp key abcd1234 address 192.168.1.1
+Create the trnasform-set:
+crypto ipsec transform-set boson esp-3des esp-md5-hmac
+
+- Create the crypto-map profile:
+crypto map exsim 1 ipsec-isakmp
+set peer 192.168.1.1
+set transform-set boson
+match address 101
+
+- ACL for encrypted traffic: 
+access-list 101 permit gre host 192.168.1.2 host 192.168.1.1
+
+- Apply the crypto map on the physical interface:
+interface f0/0
+crypto map exsim
+
+- Create the tunnel interface and specify the physical interface IP of source and destinataion:
+interface tunnel 0
+ip address 192.168.100.2 255.255.255.252
+tunnel source 192.168.1.2
+tunnel destination 192.168.1.1
+
+- Create a static route and point to tunnel interface:
+ip route 10.2.2.0 255.255.255.0 tunnel 0
+
+

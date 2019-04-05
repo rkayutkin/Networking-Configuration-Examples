@@ -1,0 +1,25 @@
+---IPSEC S2S Tunnel---
+
+####Create a ISAKMP policy:
+    Authentication: pre-shared-key
+    Encryption: AES 256
+    Hashing: SHA
+    DH: Group 5
+    Lifetime: 3600
+
+crypto isakmp policy 10
+ hashing sha
+ authentication pre-share
+ group 5
+ lifetime 3600
+ encryption aes 256
+
+ ####Configure the pre-shared-key “VAULT” which you will use for the IPSEC connection.
+
+crypto isakmp key 0 VAULT address 192.168.12.1
+
+####Configure the IPSEC transform-set:
+    Cipher: AES 256
+    ESP (Encapsulating Security Protcol)
+    Hashing: SHA
+

@@ -1,0 +1,59 @@
+--- EIGRP Summarization ---
+
+On Router6: 
+Router6>enable 
+Router6#configure terminal 
+Router6(config)#router eigrp 1 
+Router6(config-router)#network 6.6.6.6 0.0.0.0 
+Router6(config-router)#network 192.168.1.96 0.0.0.31 
+Router6(config-router)#network 198.51.100.16 0.0.0.3 
+Router6(config-router)#exit 
+
+Router6(config)#interface fastethernet 0/0 
+Router6(config-if)#ip summary-address eigrp 1 192.168.1.96 255.255.255.224
+
+On Router5: 
+Router5>enable 
+Router5#configure terminal 
+Router5(config)#router eigrp 1 
+Router5(config-router)#network 5.5.5.5 0.0.0.0 
+Router5(config-router)#network 192.168.1.64 0.0.0.31 
+Router5(config-router)#network 198.51.100.20 0.0.0.3 
+Router5(config-router)#exit 
+
+Router5(config)#interface fastethernet 0/0 
+Router5(config-if)#ip summary-address eigrp 1 192.168.1.64 255.255.255.224
+
+On Router4: 
+Router4>enable 
+Router4#configure terminal 
+Router4(config)#router eigrp 1 
+Router4(config-router)#network 4.4.4.4 0.0.0.0 
+Router4(config-router)#network 192.168.1.32 0.0.0.31 
+Router4(config-router)#network 198.51.100.8 0.0.0.3 
+Router4(config-router)#exit 
+
+Router4(config)#interface fastethernet 0/0 
+Router4(config-if)#ip summary-address eigrp 1 192.168.1.32 255.255.255.224
+
+On Router3: 
+Router3>enable 
+Router3#configure terminal 
+Router3(config)#router eigrp 1 
+Router3(config-router)#network 3.3.3.3 0.0.0.0
+Router3(config-router)#network 192.168.1.0 0.0.0.31 
+Router3(config-router)#network 198.51.100.4 0.0.0.3 
+Router3(config-router)#exit 
+
+Router3(config)#interface fastethernet 0/0 
+Router3(config-if)#ip summary-address eigrp 1 192.168.1.0 255.255.255.224
+
+On Router2: 
+Router2>enable 
+Router2#configure terminal 
+Router2(config)#router eigrp yourcorp 
+Router2(config-router)#address-family ipv4 unicast autonomous-system 1 Router2(config-router-af)#af-interface fastethernet 0/0 Router2(config-router-af-interface)#summary-address 198.51.100.16 255.255.255.248 Router2(config-router-af-interface)#summary-address 192.168.1.64 255.255.255.192
+
+Router1>enable Router1#configure terminal 
+Router1(config)#router eigrp yourcorp 
+Router1(config-router)#address-family ipv4 unicast autonomous-system 1 Router1(config-router-af)#af-interface fastethernet 0/0 Router1(config-router-af-interface)#summary-address 198.51.100.0 255.255.255.240 Router1(config-router-af-interface)#summary-address 192.168.1.0 255.255.255.192

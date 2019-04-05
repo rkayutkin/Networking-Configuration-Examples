@@ -1,0 +1,23 @@
+--- Two-Way Redistribtion ---
+
+Configure RouterA for EIGRP:
+RouterA>enable 
+RouterA#configure terminal 
+RouterA(config)#router eigrp 10 
+RouterA(config-router)#network 10.100.100.0 0.0.0.255 
+RouterA(config-router)#network 192.168.1.64 0.0.0.15 
+RouterA(config-router)#no auto-summary
+
+Configure RouterA for OSPF: 
+RouterA(config)#router ospf 1 
+RouterA(config-router)#network 192.168.1.32 0.0.0.15 area 0
+
+Redistribute OSPF into EIGRP: 
+RouterA(config)#router eigrp 10 
+RouterA(config-router)#redistribute ospf 1 
+RouterA(config-router)#default-metric 10000 100 255 1 1500
+
+Redistribute EIGRP into OSPF: 
+RouterA(config)#router ospf 1 
+RouterA(config-router)#redistribute eigrp 10 subnets 
+RouterA(config-router)#default-metric 10
