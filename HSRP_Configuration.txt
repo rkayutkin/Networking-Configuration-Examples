@@ -1,0 +1,33 @@
+####Configuration for HSRP####
+
+##Switch1 Configuration##
+spanning-tree vlan 10 root primary
+spanning-tree vlan 20 root secondary
+
+interface vlan 10
+ ip address 10.1.10.2 255.255.255.0
+ standby 10 ip 10.1.10.1
+ standby 10 priority 110
+ standby 10 preempt
+
+interface vlan 20
+ ip address 10.1.20.2 255.255.255.0
+ standby 20 ip 10.1.20.1
+ standby 20 priority 90
+ standby 20 preempt
+
+##Switch2 Configuration##
+spanning-tree vlan 10 root secondary
+spanning-tree vlan 20 root primary
+
+interface vlan 10
+ ip address 10.1.10.3 255.255.255.0
+ standby 10 ip 10.1.10.1
+ standby 10 priority 90
+ standby 10 preempt
+
+interface vlan 20
+ ip address 10.1.20.3 255.255.255.0
+ standby 20 ip 10.1.20.1
+ standby 20 priority 110
+ standby 20 preempt
