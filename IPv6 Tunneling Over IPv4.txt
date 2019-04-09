@@ -1,0 +1,126 @@
+--- IPv6 Tunneling Over IPv4 ---
+
+-- IPV6 Router 1 --
+
+- Enable IPv6 Routing
+ipv6 unicast-routing
+
+- Enable RIPng for tunnel dynamic routing 
+ipv6 router rip IPV6_OVER_IPV4
+
+- IPv6 Interface 
+interface FastEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ ipv6 address 2000::/64 eui-64
+ ipv6 enable
+ ipv6 rip IPV6_OVER_IPV4 enable
+
+-- IPV6 Router 2 --
+
+- Enable IPv6 Routing
+ipv6 unicast-routing
+
+- Enable RIPng for tunnel dynamic routing 
+ipv6 router rip IPV6_OVER_IPV4
+
+- IPv6 Interface 
+interface FastEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ ipv6 address 4000::/64 eui-64
+ ipv6 enable
+ ipv6 rip IPV6_OVER_IPV4 enable
+
+-- IPV6/IPV4 Border Router terminate with Router 1 --
+
+- Enable IPv6 Routing
+ipv6 unicast-routing
+
+- Enable RIPng for tunnel dynamic routing 
+ipv6 router rip IPV6_OVER_IPV4
+
+- Tunnel interface to create IPV6 over IPV4 Tunnel
+interface Tunnel0
+ no ip address
+ ipv6 address 3000::1/64
+ ipv6 enable
+ ipv6 rip IPV6_OVER_IPV4 enable
+ tunnel source FastEthernet1/0
+ tunnel destination 192.168.34.4
+ tunnel mode ipv6ip
+
+- IPV6 Interface
+interface FastEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ ipv6 address 2000::/64 eui-64
+ ipv6 rip IPV6_OVER_IPV4 enable
+
+- IPV4 Interface 
+interface FastEthernet1/0
+ no switchport
+ ip address 192.168.23.2 255.255.255.0
+
+- Use OPSF for IPV4 dynamic routing 
+router ospf 1
+ log-adjacency-changes
+ network 192.168.23.0 0.0.0.255 area 0
+
+-- IPV6/IPV4 Border Router terminate with Router 2 --
+
+- Enable IPv6 Routing
+ipv6 unicast-routing
+
+- Enable RIPng for tunnel dynamic routing 
+ipv6 router rip IPV6_OVER_IPV4
+
+- Tunnel interface to create IPV6 over IPV4 Tunnel
+interface Tunnel0
+ no ip address
+ ipv6 address 3000::2/64
+ ipv6 enable
+ ipv6 rip IPV6_OVER_IPV4 enable
+ tunnel source FastEthernet0/0
+ tunnel destination 192.168.23.2
+ tunnel mode ipv6ip
+
+- IPV6 Interface
+interface FastEthernet1/0
+ no switchport
+ no ip address
+ ipv6 address 4000::/64 eui-64
+ ipv6 enable
+ ipv6 rip IPV6_OVER_IPV4 enable
+
+- IPV4 Interface 
+interface FastEthernet0/0
+ ip address 192.168.34.4 255.255.255.0
+ duplex auto
+ speed auto
+
+- Use OPSF for IPV4 dynamic routing 
+router ospf 1
+ log-adjacency-changes
+ network 192.168.34.0 0.0.0.255 area 0
+
+ -- IPv4 Router connecting both Networks -- 
+
+- IPV4 Interface connection to Boarder Router 1
+interface FastEthernet0/0
+ ip address 192.168.23.3 255.255.255.0
+ duplex auto
+ speed auto
+
+- IPV4 Interface connection to Boarder Router 2
+interface FastEthernet1/0
+ no switchport
+ ip address 192.168.34.3 255.255.255.0
+
+- Use OPSF for IPV4 dynamic routing
+router ospf 1
+ log-adjacency-changes
+ network 0.0.0.0 255.255.255.255 area 0

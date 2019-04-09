@@ -1,0 +1,25 @@
+--- NAT-PT ---
+
+Server:
+
+ipv6 unicast-routing
+
+interface FastEthernet0/0
+ ip address 192.168.123.3 255.255.255.0
+ duplex auto
+ speed auto
+ ipv6 nat
+
+interface FastEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ ipv6 address 2001:A:B:C::/64 eui-64
+ ipv6 nat
+
+ipv6 nat v4v6 source 192.168.123.1 2001:12::C0A8:7B01
+ipv6 nat v4v6 source 192.168.123.2 2001:12::C0A8:7B02
+ipv6 nat v6v4 source 2001:345::4 192.168.45.4
+ipv6 nat v6v4 source 2001:345::5 192.168.45.5
+ipv6 nat prefix 2001:12::/96
+
