@@ -1,0 +1,55 @@
+---GLBP Configuration---
+
+##R1 (Highest Priority for Virtual Gateway)##
+
+###Create tracking for downlink Next-Hop Interface###
+track 1 interface Ethernet0/1 line-protocol
+
+###GLBP configured interface###
+interface Ethernet0/0
+ ip address 192.168.10.11 255.255.255.0
+ glbp 1 ip 192.168.10.1
+ glbp 1 priority 120
+ glbp 1 authentication md5 key-string Cisco
+ glbp 1 weighting 100 lower 80 upper 90
+ glbp 1 weighting track 1 decrement 30
+
+###Downlink from Next-Hop###
+interface Ethernet0/1
+ ip address 192.168.1.1 255.255.255.0
+
+##R2 (Mid Priority for Virtual Gateway)##
+
+###Create tracking for downlink Next-Hop Interface###
+track 1 interface Ethernet0/1 line-protocol
+
+###GLBP configured interface###
+interface Ethernet0/0
+ ip address 192.168.10.12 255.255.255.0
+ glbp 1 ip 192.168.10.1
+ glbp 1 priority 110
+ glbp 1 authentication md5 key-string Cisco
+ glbp 1 weighting 100 lower 80 upper 90
+ glbp 1 weighting track 1 decrement 30
+
+###Downlink from Next-Hop###
+interface Ethernet0/1
+ ip address 192.168.2.1 255.255.255.0
+
+##R3 (Lowest Priority for Virtual Gateway)##
+
+###Create tracking for downlink Next-Hop Interface###
+track 1 interface Ethernet0/1 line-protocol
+
+###GLBP configured interface###
+interface Ethernet0/0
+ ip address 192.168.10.13 255.255.255.0
+ glbp 1 ip 192.168.10.1
+ glbp 1 priority 100
+ glbp 1 authentication md5 key-string Cisco
+ glbp 1 weighting 100 lower 80 upper 90
+ glbp 1 weighting track 1 decrement 30
+
+###Downlink from Next-Hop###
+interface Ethernet0/1
+ ip address 192.168.3.1 255.255.255.0
