@@ -1,0 +1,53 @@
+##R1 should, whenever available, be the master for VLAN 11 clients and the backup for VLAN 22 clients##
+
+interface Ethernet0/1.11
+ encapsulation dot1Q 11
+ ip address 10.0.11.2 255.255.255.0
+ vrrp 11 ip 10.0.11.1
+ vrrp 11 priority 110
+
+interface Ethernet0/2.22
+ encapsulation dot1Q 22
+ ip address 10.0.22.3 255.255.255.0
+ vrrp 22 ip 10.0.22.1
+
+##R2 should, whenever available, be the master for VLAN 22 clients and the backup for VLAN 11 clients##
+
+interface Ethernet0/1.11
+ encapsulation dot1Q 11
+ ip address 10.0.11.3 255.255.255.0
+ vrrp 11 ip 10.0.11.1
+
+interface Ethernet0/2.22
+ encapsulation dot1Q 22
+ ip address 10.0.22.2 255.255.255.0
+ vrrp 22 ip 10.0.22.1
+ vrrp 22 priority 110
+
+##*For self-documentation, the VRRP group numbers should match the numbers of the VLANs that they serve*##
+
+##If the router uplink fails, make sure that the traffic from the PCs does not take a suboptimal path. The network is a little underprovisioned, so Gregory worries that suboptimal traffic could have bad consequences for the whole network#
+
+R1:
+
+track 1 interface Ethernet0/0 line-protocol
+
+interface Ethernet0/1.11
+vrrp 11 track 1 decrement 20
+
+R2:
+
+track 1 interface Ethernet0/0 line-protocol
+
+interface Ethernet0/2.22
+vrrp 22 track 1 decrement 20
+
+##Secure the VRRP peers. Make sure that no VRRP device can join the VRRP peers on the network without a proper key##
+
+Both R1 and R2:
+
+interface Ethernet0/1.11
+vrrp 11 authentication md5 key-string Cisco
+
+interface Ethernet0/2.22
+vrrp 22 authentication md5 key-string Cisco

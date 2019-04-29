@@ -1,0 +1,19 @@
+#On DSW1, you defined an IP SLA that tests connectivity by using HTTP GET to the IP address of 209.165.200.233#
+
+DSW1(config)# ip sla 1
+DSW1(config-ip-sla)# http get http://209.165.200.233 source-ip 192.168.22.254
+
+#The IP SLA that you created has an operational frequency of 90 seconds#
+
+DSW1(config-ip-sla-http)# frequency 90
+DSW1(config-ip-sla-http)# exit
+
+#The IP SLA that you created is scheduled to run right away and to continue for 48 hours (172,800 seconds)#
+
+DSW1(config)# ip sla schedule 1 start-time now life 172800
+
+#R1 is configured with the IP SLA entry 69 that uses the ICMP echo test to the IP address 209.165.200.157#
+#The IP SLA entry 69 on R1 is scheduled to run right away and has its life set to forever#
+
+R1(config)# no ip sla schedule 69 life 1 start-time now
+R1(config)# ip sla schedule 69 life forever start-time now
