@@ -1,0 +1,27 @@
+##Configure storm control on an interface with the following characteristics:##
+SW(config)# interface GigabitEthernet 0/1
+
+#Percentage rising and falling thresholds for broadcast#
+SW(config-if)# storm-control broadcast level 50 30
+
+#Packets per second rising and falling thresholds for multicast#
+SW(config-if)# storm-control multicast level pps 30k 20k
+
+#Bits per second rising threshold for unicast#
+SW(config-if)# storm-control unicast level bps 30m
+
+#Configure storm control to error-disable an interface and send an SNMP trap when a traffic storm occurs#
+SW(config)# interface GigabitEthernet 0/1
+SW(config-if)# storm-control action shutdown
+SW(config-if)# storm-control action trap
+
+##Verify with the following commands which will show the interface, state, low and high threshold, and current measurments:##
+
+#Display the broadcast filter state#
+SW# show storm-control
+
+#Display the multicast filter state#
+SW# show storm-control multicast
+
+#Display the unicast filter state#
+how storm-control unicast
