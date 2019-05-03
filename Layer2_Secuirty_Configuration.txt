@@ -1,0 +1,71 @@
+##Configure a MAC PACL and apply it on a Layer 2 interface.##
+SW(config)# mac access-list extended simple-mac-acl
+SW(config-ext-macl)# permit host 0000.dada.fafa any
+SW(config-ext-macl)# interface gigabitEthernet 2/0/22
+SW(config-if)# mac access-group simple-mac-acl in
+
+##Configure an IP PACL and apply it on a Layer 2 interface.##
+SW(config)# ip access-list extended simple-ip-acl
+SW(config-ext-nacl)# permit ip host 10.0.0.1 any
+SW(config-ext-nacl)# interface gigabitEthernet 2/0/22
+SW(config-if)# ip access-group simple-ip-acl in
+
+##To configure the access mode on a Layer 2 interface##
+SW(config)# interface interface slot/number
+SW(config-if)# access-group mode [prefer port | merge]
+
+##Secure Cisco Discovery Protocol##
+R1(config)# interface ethernet0/0
+R1(config-if)# no cdp enable
+
+##Configure port security##
+DSW2(config)# interface range ethernet 1/1, ethernet 1/2
+DSW2(config-if-range)# switchport port-security mac-address sticky
+DSW2(config-if-range)# switchport port-security
+
+
+SW(config)# interface range ethernet 0/2, ethernet 0/3
+SW(config-if-range)# switchport port-security mac-address sticky
+SW(config-if-range)# switchport port-security
+
+##Configure the encrypted enable password##
+DSW1(config)# no enable password
+DSW1(config)# enable secret c1sc0
+
+##Secure the vty and console access passwords##
+SW(config)# service password-encryption
+
+##Secure remote access##
+R1(config)# line vty 0 4
+R1(config-line)# transport input ssh
+
+##Configure a system banner for unauthorized users##
+R1(config)# banner login C Unauthorized activities will be grounds for prosecution! C
+
+##Secure unused ports##
+SW(config)# interface range ethernet1/0-3
+SW(config-if-range)# switchport access vlan 199
+SW(config-if-range)# shutdown
+SW(config-if-range)# exit
+SW(config)# interface range ethernet2/0-3
+SW(config-if-range)# switchport access vlan 199
+SW(config-if-range)# shutdown
+SW(config-if-range)# exit
+SW(config)# interface range ethernet3/0-3
+SW(config-if-range)# switchport access vlan 199
+SW(config-if-range)# shutdown
+SW(config-if-range)# exit
+SW(config)# interface range ethernet4/0-3
+SW(config-if-range)# switchport access vlan 199
+SW(config-if-range)# shutdown
+SW(config-if-range)# exit
+SW(config)# interface range ethernet5/0-3
+SW(config-if-range)# switchport access vlan 199
+SW(config-if-range)# shutdown
+
+##Secure STP on ports that are connected to end-user ports##
+DSW2(config)# interface range ethernet 1/1, ethernet 1/2
+DSW2(config-if-range)# no spanning-tree bpdufilter enable
+
+##Secure HTTP on all devices##
+DSW1(config)# no ip http server
