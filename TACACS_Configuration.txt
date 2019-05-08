@@ -1,4 +1,4 @@
-#Configuring RADIUS#
+#Configuring TACACS+#
 
 ##Enable AAA services in global configuration mode##
 Switch(config)# aaa new-model
@@ -6,21 +6,22 @@ Switch(config)# aaa new-model
 ##Configure a local username for local credential##
 Switch(config)# username username secret password
 
-##Configure the RADIUS server##
-Switch(config)# radius server configuration-name
-Switch(config-radius-server)# address ipv4 hostname [auth-port integer] [acct-port integer]
-Switch(config-radius-server)# key string
+##Configure the TACACS+ server##
+Switch(config)# tacacs server configuration-name
+Switch(config-server-tacacs)# address ipv4 hostname
+Switch(config-server-tacacs)# port integer
+Switch(config-server-tacacs)# key string
 
-##Associate the RADIUS server with a server group##
-Switch(config)# aaa group server radius group-name
-Switch(config-sg-radius)# server name configuration-name
+##Associate the TACACS+ server with a server group##
+Switch(config)# aaa group server tacacs+ group-name
+Switch(config-sg-tacacs+)# server name configuration-name
 
-##Configure aaa authentication login to use a RADIUS group with a fallback to local authentication##
+##Configure aaa authentication login to use the TACACS+ group with a fallback to local authentication##
 Switch(config)# aaa authentication login [default | list-name] group group-name local
 
-##Apply to the VTY lines for authenticating SSH or Telnet##
-Switch(config)# line vty 0
-Switch(config-line)# login authentication radius_list
+##Configuring authorization and accounting is optional##
+##Components of the AAA model are mutually dependent##
+##Authorization and accounting require authentication to be configured first##
 
 ##Configure authorization and apply it to a line or interface##
 Switch(config)# aaa authorization authorization-type list-name method-list
