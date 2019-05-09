@@ -1,0 +1,19 @@
+#An example configuration for 802.1X#
+
+##802.1X authentication demands AAA to be enabled as well as a configured RADIUS server:##
+Switch(config)# aaa new-model
+Switch(config)# radius server host 172.16.1.1 key cisco456
+Switch(config)# aaa group server radius Mygroup3
+Switch(config-sg-radius)# server 172.16.1.1
+
+##Create a default 802.1X authentication method list:##
+Switch(config)# aaa authentication dot1x default group Mygroup3
+
+##Enable 802.1X authentication on the switch:##
+Switch(config)# dot1x system-auth-control
+
+##Enable 802.1X authentication on the FastEthernet0/8 interface:##
+Switch(config)# interface FastEthernet0/8
+##You will not be able to issue dot1x commands on the interface if it is not configured with the switchport mode access command##
+Switch(config-if)# switcport mode access
+Switch(config-if)# dot1x port-control auto
