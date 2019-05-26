@@ -1,0 +1,21 @@
+##Enable DHCP Snooping to prevent Rogue DHCP Servers also known as DHCP Spoofing##
+
+#Enables DHCP snooping globally. By default, the feature is not enabled#
+ip dhcp snooping
+#Enables DHCP option 82. This setting is optional for the forwarded DHCP request packet to contain information on the switch port where it originated#
+ip dhcp snooping information option 
+
+#Configures the number of DHCP packets per second that an interface can receive. This implementation ensures that DHCP traffic will not overwhelm the DHCP servers. Normally, the rate limit applies to untrusted interfaces.#
+ip dhcp snooping limit rate (rate)
+
+#Configures trusted port. Use no before the command name to revert to untrusted. Use this command in the interface configuration mode#
+ip dhcp snooping trust
+
+#Identifies the VLANs that will be subject to DHCP snooping#
+ip dhcp snooping vlan vlan-id [vlan-id]
+
+#Verifies the configuration#
+show ip dhcp snooping
+
+#To display all the known DHCP bindings that have been learned on a switch#
+show ip dhcp snooping binding

@@ -1,0 +1,7 @@
+#IP Source Guard enabled#
+
+#Configure on untrusted IP DHCP Snopping interfaces that are Layer 2#
+SW(config)# interface ethernet 0/1
+SW(config-if)# ip verify source
+SW(config)# interface ethernet 0/2
+SW(config-if)# ip verify source

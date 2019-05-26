@@ -1,0 +1,19 @@
+#Dynamic ARP Inspection against ARP Spoofing#
+
+##Implement protection against DHCP spoofing##
+
+#Enable DHCP snooping globally#
+SW(config)# ip dhcp snooping
+
+#Enable DHCP snooping on selected VLANs#
+SW(config)# ip dhcp snooping vlan 10
+
+##Enable DAI##
+
+#Enable ARP inspection on selected VLANs#
+SW(config)# ip arp inspection vlan 10
+
+#Configure trusted interfaces for DHCP snooping and ARP inspection (untrusted is the default configuration)#
+SW(config)# interface ethernet 0/0
+SW(config-if)# ip dhcp snooping trust
+SW(config-if)# ip arp inspection trust
